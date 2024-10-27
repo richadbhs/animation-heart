@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation Texte et Cœur</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        #message {
+            position: absolute;
+            text-align: center;
+            font-size: 32px;
+            color: #333;
+            opacity: 0;
+            animation: showHideText 4s infinite;
+        }
+
+        .heart {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            background-color: red;
+            transform: rotate(-45deg);
+            opacity: 0;
+            animation: showHideHeart 4s infinite;
+        }
+
+        .heart::before,
+        .heart::after {
+            content: "";
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-color: red;
+            border-radius: 50%;
+        }
+
+        .heart::before {
+            top: -75px;
+            left: 0;
+        }
+
+        .heart::after {
+            left: 75px;
+            top: 0;
+        }
+
+        #startButton {
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        @keyframes showHideText {
+            0%, 50% { opacity: 1; }
+            50.01%, 100% { opacity: 0; }
+        }
+
+        @keyframes showHideHeart {
+            0%, 50% { opacity: 0; }
+            50.01%, 100% { opacity: 1; }
+        }
+
+        #message, .heart {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <button id="startButton">Clique hbiba</button>
+    <div id="message">Désolé Iyline</div>
+    <div class="heart"></div>
+
+    <script>
+        const button = document.getElementById('startButton');
+        const message = document.getElementById('message');
+        const heart = document.querySelector('.heart');
+
+        button.addEventListener('click', () => {
+            message.style.display = 'block';
+            heart.style.display = 'block';
+            button.style.display = 'none'; // Cacher le bouton après clic
+        });
+    </script>
+
+</body>
+</html>
