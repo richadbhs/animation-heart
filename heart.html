@@ -7,13 +7,18 @@
     body {
       margin: 0;
       height: 100vh;
-      background: linear-gradient(135deg, #fce4ec, #e1f5fe);
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow: hidden;
+      color: white;
+      text-shadow: 1px 1px 2px black;
+      padding: 20px;
+      text-align: center;
     }
 
     button {
@@ -24,8 +29,9 @@
       background: #ff4081;
       color: white;
       cursor: pointer;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
       transition: transform 0.2s ease;
+      margin-top: 20px;
     }
 
     button:hover {
@@ -33,136 +39,135 @@
       background-color: #e91e63;
     }
 
-    .message {
-      margin-top: 30px;
-      font-size: 26px;
-      color: #333;
+    .message, .poeme {
       opacity: 0;
       transform: translateY(30px);
       transition: all 0.8s ease;
-      text-align: center;
-      animation: none;
     }
 
-    .message.visible {
+    .visible {
       opacity: 1;
       transform: translateY(0);
+    }
+
+    .message {
+      font-size: 28px;
+      margin-top: 20px;
       animation: pulse 1.5s infinite;
+    }
+
+    .poeme {
+      font-size: 18px;
+      margin-top: 30px;
+      max-width: 700px;
+      line-height: 1.6;
+      background: rgba(0,0,0,0.4);
+      padding: 20px;
+      border-radius: 15px;
     }
 
     @keyframes pulse {
       0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      50% { transform: scale(1.03); }
       100% { transform: scale(1); }
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
-  <button onclick="showLove()">Cliquez sur le bouton</button>
+  <h1 style="font-size:32px;">Clique sur le bouton, Ségolène 💖</h1>
+  <button onclick="showLove()">Clique ici</button>
   <div id="message" class="message">Arrête de me faire la gueule Ségolène ❤️</div>
+  <div id="poeme" class="poeme">
+    J’ai peut-être dit des choses qui ont blessé,  
+    Mais crois-moi, je n’ai jamais cessé d’aimer.  
+    Ton silence me pique plus que mille mots,  
+    Et je me perds quand tu tournes le dos.  
 
-  <!-- Canvas pour confettis -->
-  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+    <br><br>
+
+    Ce bouton, c’est pas juste du code ou du style,  
+    C’est une main tendue, avec un vrai profil.  
+    Pardonne mes fautes, oublie mes erreurs,  
+    Reviens, s’il te plaît, adoucis mon cœur.  
+  </div>
+
+  <canvas id="confetti-canvas" width="100%" height="100%"></canvas>
 
   <script>
     function showLove() {
-      const message = document.getElementById('message');
-      message.classList.add('visible');
+      document.getElementById('message').classList.add('visible');
+      document.getElementById('poeme').classList.add('visible');
       launchConfetti();
     }
 
-    // Confettis JS
-    const confetti = {
-      maxCount: 150,
-      speed: 2,
-      frameInterval: 15,
-      alpha: 1.0,
-      gradient: false,
-      start: null,
-      stop: null,
-    };
+    // Confettis simples (adapté pour site léger)
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let confettis = [];
 
-    // Mini-lib confetti (intégré)
-    (function() {
-      const colors = ["#f44336", "#e91e63", "#9c27b0", "#3f51b5", "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50", "#8bc34a", "#ffc107", "#ff9800"];
-      let canvas, ctx;
-      let confettiParticles = [];
+    function Confetti() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height - canvas.height;
+      this.r = Math.random() * 6 + 4;
+      this.d = Math.random() * 40 + 10;
+      this.color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
+      this.tilt = Math.random() * 10 - 10;
+      this.tiltAngle = 0;
+      this.tiltAngleIncrement = Math.random() * 0.07 + 0.05;
 
-      function resetParticle(p, width, height) {
-        p.color = colors[Math.floor(Math.random() * colors.length)];
-        p.x = Math.random() * width;
-        p.y = Math.random() * height - height;
-        p.diameter = Math.random() * 10 + 5;
-        p.tilt = Math.random() * 10 - 10;
-        p.tiltAngle = 0;
-        p.tiltAngleIncrement = Math.random() * 0.07 + 0.05;
-        return p;
+      this.draw = function() {
+        ctx.beginPath();
+        ctx.lineWidth = this.r / 2;
+        ctx.strokeStyle = this.color;
+        ctx.moveTo(this.x + this.tilt, this.y);
+        ctx.lineTo(this.x + this.tilt + this.r, this.y + this.r);
+        ctx.stroke();
       }
 
-      function draw() {
-        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        for (let i = 0; i < confettiParticles.length; i++) {
-          const p = confettiParticles[i];
-          ctx.beginPath();
-          ctx.lineWidth = p.diameter;
-          ctx.strokeStyle = p.color;
-          ctx.moveTo(p.x + p.tilt + p.diameter / 2, p.y);
-          ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.diameter / 2);
-          ctx.stroke();
-        }
-
-        update();
-      }
-
-      function update() {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        for (let i = 0; i < confettiParticles.length; i++) {
-          let p = confettiParticles[i];
-          p.y += Math.cos(p.diameter) + confetti.speed;
-          p.tiltAngle += p.tiltAngleIncrement;
-          p.tilt = Math.sin(p.tiltAngle) * 15;
-
-          if (p.y > height) {
-            confettiParticles[i] = resetParticle({}, width, height);
-          }
+      this.update = function() {
+        this.y += 2;
+        this.tiltAngle += this.tiltAngleIncrement;
+        this.tilt = Math.sin(this.tiltAngle) * 10;
+        if (this.y > canvas.height) {
+          this.y = -10;
+          this.x = Math.random() * canvas.width;
         }
       }
-
-      function loop() {
-        draw();
-        requestAnimationFrame(loop);
-      }
-
-      function initCanvas() {
-        canvas = document.getElementById('confetti-canvas');
-        ctx = canvas.getContext('2d');
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-      }
-
-      function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }
-
-      function startConfetti() {
-        confettiParticles = [];
-        for (let i = 0; i < confetti.maxCount; i++) {
-          confettiParticles.push(resetParticle({}, window.innerWidth, window.innerHeight));
-        }
-        loop();
-      }
-
-      confetti.start = startConfetti;
-    })();
+    }
 
     function launchConfetti() {
-      if (confetti.start) confetti.start();
+      for (let i = 0; i < 150; i++) {
+        confettis.push(new Confetti());
+      }
+      animateConfetti();
     }
-  </script>
 
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let c of confettis) {
+        c.update();
+        c.draw();
+      }
+      requestAnimationFrame(animateConfetti);
+    }
+
+    // Redimensionne le canvas sur mobile
+    window.onload = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.onresize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+  </script>
 </body>
 </html>
