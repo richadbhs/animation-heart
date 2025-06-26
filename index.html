@@ -1,105 +1,168 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animation Texte et Cœur</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-            flex-direction: column;
-        }
+  <meta charset="UTF-8">
+  <title>Pardon Ségolène ❤️</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #fce4ec, #e1f5fe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
 
-        #message {
-            position: absolute;
-            text-align: center;
-            font-size: 32px;
-            color: #333;
-            opacity: 0;
-            animation: showHideText 4s infinite;
-        }
+    button {
+      padding: 16px 35px;
+      font-size: 20px;
+      border: none;
+      border-radius: 50px;
+      background: #ff4081;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease;
+    }
 
-        .heart {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            background-color: red;
-            transform: rotate(-45deg);
-            opacity: 0;
-            animation: showHideHeart 4s infinite;
-        }
+    button:hover {
+      transform: scale(1.05);
+      background-color: #e91e63;
+    }
 
-        .heart::before,
-        .heart::after {
-            content: "";
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            background-color: red;
-            border-radius: 50%;
-        }
+    .message {
+      margin-top: 30px;
+      font-size: 26px;
+      color: #333;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease;
+      text-align: center;
+      animation: none;
+    }
 
-        .heart::before {
-            top: -75px;
-            left: 0;
-        }
+    .message.visible {
+      opacity: 1;
+      transform: translateY(0);
+      animation: pulse 1.5s infinite;
+    }
 
-        .heart::after {
-            left: 75px;
-            top: 0;
-        }
-
-        #startButton {
-            padding: 10px 20px;
-            font-size: 20px;
-            background-color: #ff4d4d;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-
-        @keyframes showHideText {
-            0%, 50% { opacity: 1; }
-            50.01%, 100% { opacity: 0; }
-        }
-
-        @keyframes showHideHeart {
-            0%, 50% { opacity: 0; }
-            50.01%, 100% { opacity: 1; }
-        }
-
-        #message, .heart {
-            display: none;
-        }
-
-    </style>
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
 </head>
 <body>
 
-    <button id="startButton">Clique hbiba</button>
-    <div id="message">Désolé Iyline</div>
-    <div class="heart"></div>
+  <button onclick="showLove()">Cliquez sur le bouton</button>
+  <div id="message" class="message">Arrête de me faire la gueule Ségolène ❤️</div>
 
-    <script>
-        const button = document.getElementById('startButton');
-        const message = document.getElementById('message');
-        const heart = document.querySelector('.heart');
+  <!-- Canvas pour confettis -->
+  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
 
-        button.addEventListener('click', () => {
-            message.style.display = 'block';
-            heart.style.display = 'block';
-            button.style.display = 'none'; // Cacher le bouton après clic
-        });
-    </script>
+  <script>
+    function showLove() {
+      const message = document.getElementById('message');
+      message.classList.add('visible');
+      launchConfetti();
+    }
+
+    // Confettis JS
+    const confetti = {
+      maxCount: 150,
+      speed: 2,
+      frameInterval: 15,
+      alpha: 1.0,
+      gradient: false,
+      start: null,
+      stop: null,
+    };
+
+    // Mini-lib confetti (intégré)
+    (function() {
+      const colors = ["#f44336", "#e91e63", "#9c27b0", "#3f51b5", "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50", "#8bc34a", "#ffc107", "#ff9800"];
+      let canvas, ctx;
+      let confettiParticles = [];
+
+      function resetParticle(p, width, height) {
+        p.color = colors[Math.floor(Math.random() * colors.length)];
+        p.x = Math.random() * width;
+        p.y = Math.random() * height - height;
+        p.diameter = Math.random() * 10 + 5;
+        p.tilt = Math.random() * 10 - 10;
+        p.tiltAngle = 0;
+        p.tiltAngleIncrement = Math.random() * 0.07 + 0.05;
+        return p;
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        for (let i = 0; i < confettiParticles.length; i++) {
+          const p = confettiParticles[i];
+          ctx.beginPath();
+          ctx.lineWidth = p.diameter;
+          ctx.strokeStyle = p.color;
+          ctx.moveTo(p.x + p.tilt + p.diameter / 2, p.y);
+          ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.diameter / 2);
+          ctx.stroke();
+        }
+
+        update();
+      }
+
+      function update() {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        for (let i = 0; i < confettiParticles.length; i++) {
+          let p = confettiParticles[i];
+          p.y += Math.cos(p.diameter) + confetti.speed;
+          p.tiltAngle += p.tiltAngleIncrement;
+          p.tilt = Math.sin(p.tiltAngle) * 15;
+
+          if (p.y > height) {
+            confettiParticles[i] = resetParticle({}, width, height);
+          }
+        }
+      }
+
+      function loop() {
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      function initCanvas() {
+        canvas = document.getElementById('confetti-canvas');
+        ctx = canvas.getContext('2d');
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+      }
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      function startConfetti() {
+        confettiParticles = [];
+        for (let i = 0; i < confetti.maxCount; i++) {
+          confettiParticles.push(resetParticle({}, window.innerWidth, window.innerHeight));
+        }
+        loop();
+      }
+
+      confetti.start = startConfetti;
+    })();
+
+    function launchConfetti() {
+      if (confetti.start) confetti.start();
+    }
+  </script>
 
 </body>
 </html>
